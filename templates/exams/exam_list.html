@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Available Exams - CBT System{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-light">
+                    <i class="fas fa-list-alt me-2"></i>Available Exams
+                </h2>
+                {% if user.is_admin or user.is_staff %}
+                <div class="d-flex gap-2">
+                    <a href="/admin/exams/exam/add/" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Create Exam
+                    </a>
+                    <a href="/admin/" class="btn btn-outline-light">
+                        <i class="fas fa-cog me-1"></i>Admin Panel
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if exams %}
+    <div class="row">
+        {% for exam in exams %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card bg-dark border-light h-100 exam-card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ exam.title }}</h5>
+                        {% if exam.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body text-light">
+                    <div class="mb-3">
+                        <h6 class="text-info">
+                            <i class="fas fa-book me-2"></i>{{ exam.subject.name }}
+                        </h6>
+                        {% if exam.description %}
+                        <p class="card-text small text-muted">{{ exam.description }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="exam-details">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-question-circle text-warning me-1"></i>
+                                    <small class="text-light">{{ exam.questions.count }} Questions</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-clock text-info me-1"></i>
+                                    <small class="text-light">{{ exam.duration_minutes }} mins</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-trophy text-warning me-1"></i>
+                                    <small class="text-light">{{ exam.total_marks }} marks</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-percentage text-success me-1"></i>
+                                    <small class="text-light">{{ exam.pass_percentage }}% pass</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent border-light">
+                    {% if user.is_student %}
+                        {% if exam.is_active %}
+                            <a href="{% url 'exams:start_exam' exam.id %}" 
+                               class="btn btn-primary w-100"
+                               onclick="return confirm('Are you ready to start the exam? Once started, the timer will begin immediately.')">
+                                <i class="fas fa-play me-1"></i>Start Exam
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary w-100" disabled>
+                                <i class="fas fa-lock me-1"></i>Exam Inactive
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <div class="d-flex gap-2">
+                            <a href="/admin/exams/exam/{{ exam.id }}/change/" class="btn btn-outline-warning flex-fill">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                            <a href="{% url 'exams:start_exam' exam.id %}" class="btn btn-primary flex-fill">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark border-light">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-clipboard-list fa-4x text-muted mb-4"></i>
+                    <h4 class="text-light mb-3">No Exams Available</h4>
+                    <p class="text-muted mb-4">There are currently no exams available for you to take.</p>
+                    
+                    {% if user.is_admin or user.is_staff %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/admin/exams/exam/add/" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i>Create First Exam
+                        </a>
+                        <a href="/admin/exams/question/add/" class="btn btn-outline-primary">
+                            <i class="fas fa-question-circle me-1"></i>Add Questions First
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-light">Please contact your administrator to create exams.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats for Admin -->
+    {% if user.is_admin or user.is_staff %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-dark border-light">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Quick Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-primary">{{ exams.count }}</h3>
+                                <small class="text-muted">Total Exams</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-success">{{ exams|length }}</h3>
+                                <small class="text-muted">Active Exams</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-warning">{{ total_questions|default:0 }}</h3>
+                                <small class="text-muted">Total Questions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-info">{{ total_attempts|default:0 }}</h3>
+                                <small class="text-muted">Total Attempts</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .exam-card {
+        transition: all 0.3s ease;
+        border: 1px solid #444;
+    }
+    
+    .exam-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,123,255,0.15);
+        border-color: #007bff;
+    }
+    
+    .detail-item {
+        background: rgba(255,255,255,0.05);
+        padding: 8px;
+        border-radius: 4px;
+        text-align: center;
+    }
+    
+    .stat-item {
+        padding: 20px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        margin: 10px;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid #444;
+    }
+    
+    .card-footer {
+        border-top: 1px solid #444;
+    }
+    
+    .text-light {
+        color: #f8f9fa !important;
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+</style>
+{% endblock %}

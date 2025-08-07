@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}{{ attempt.exam.title }} - CBT System{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+    
+    .exam-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .question-navigation {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        position: sticky;
+        top: 120px;
+    }
+    
+    .question-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid transparent;
+    }
+    
+    .question-number.answered {
+        background: var(--success-color);
+        color: white;
+    }
+    
+    .question-number.current {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .auto-save-indicator {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: var(--success-color);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 25px;
+        display: none;
+        z-index: 1001;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auto-save-indicator" id="auto-save-indicator">
+    <i class="fas fa-save me-2"></i>Auto-saved
+</div>
+
+<!-- Exam Header -->
+<div class="exam-header py-3">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <h4 class="mb-0">{{ attempt.exam.title }}</h4>
+                <small class="text-muted">{{ attempt.exam.subject.name }}</small>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="timer-display" id="exam-timer" data-remaining-time="{{ remaining_time }}">
+                    Loading...
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="progress mb-2" style="height: 8px;">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <small class="text-muted" id="progress-text">0 of {{ total_questions }} questions answered</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Questions -->
+        <div class="col-lg-9">
+            <form class="exam-form" id="exam-form" data-submit-url="{% url 'exams:submit_exam' attempt.id %}">
+                {% csrf_token %}
+                
+                {% for question in questions %}
+                    <div class="question-card" id="question-{{ forloop.counter }}" 
+                         style="{% if not forloop.first %}display: none;{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="text-primary">
+                                Question {{ forloop.counter }} of {{ total_questions }}
+                            </h5>
+                            <span class="badge bg-info">{{ question.marks }} mark{{ question.marks|pluralize }}</span>
+                        </div>
+                        
+                        <div class="question-text mb-4">
+                            <h6>{{ question.question_text }}</h6>
+                        </div>
+                        
+                        <div class="options">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" 
+                                       name="question_{{ question.id }}" value="A" 
+                                       id="q{{ question.id }}_a"
+                                       {% if existing_answers|get_item:question.id == 'A' %}checked{% endif %}>
+                                <label class="form-check-label" for="q{{ question.id }}_a">
+                                    <strong>A.</strong> {{ question.option_a }}
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" 
+                                       name="question_{{ question.id }}" value="B" 
+                                       id="q{{ question.id }}_b"
+                                       {% if existing_answers|get_item:question.id == 'B' %}checked{% endif %}>
+                                <label class="form-check-label" for="q{{ question.id }}_b">
+                                    <strong>B.</strong> {{ question.option_b }}
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" 
+                                       name="question_{{ question.id }}" value="C" 
+                                       id="q{{ question.id }}_c"
+                                       {% if existing_answers|get_item:question.id == 'C' %}checked{% endif %}>
+                                <label class="form-check-label" for="q{{ question.id }}_c">
+                                    <strong>C.</strong> {{ question.option_c }}
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" 
+                                       name="question_{{ question.id }}" value="D" 
+                                       id="q{{ question.id }}_d"
+                                       {% if existing_answers|get_item:question.id == 'D' %}checked{% endif %}>
+                                <label class="form-check-label" for="q{{ question.id }}_d">
+                                    <strong>D.</strong> {{ question.option_d }}
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="navigation-buttons mt-4">
+                            <div class="row">
+                                <div class="col-6">
+                                    {% if not forloop.first %}
+                                        <button type="button" class="btn btn-secondary" 
+                                                onclick="navigateQuestion({{ forloop.counter|add:'-1' }})">
+                                            <i class="fas fa-chevron-left me-2"></i>Previous
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                <div class="col-6 text-end">
+                                    {% if not forloop.last %}
+                                        <button type="button" class="btn btn-primary" 
+                                                onclick="navigateQuestion({{ forloop.counter|add:'1' }})">
+                                            Next<i class="fas fa-chevron-right ms-2"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <div class="submit-section mt-4 p-4 rounded" style="background: rgba(255, 255, 255, 0.1);">
+                    <div class="text-center">
+                        <h5 class="mb-3">Ready to Submit?</h5>
+                        <p class="text-muted mb-4">
+                            Make sure you have answered all questions before submitting. 
+                            You cannot change your answers after submission.
+                        </p>
+                        <button type="button" class="btn btn-success btn-lg" id="submit-btn" 
+                                onclick="submitExam()">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Exam
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Question Navigation -->
+        <div class="col-lg-3">
+            <div class="question-navigation">
+                <h6 class="mb-3">
+                    <i class="fas fa-map me-2"></i>Question Navigator
+                </h6>
+                
+                <div class="question-grid d-flex flex-wrap">
+                    {% for question in questions %}
+                        <div class="question-number" id="nav-{{ forloop.counter }}" 
+                             onclick="navigateQuestion({{ forloop.counter }})"
+                             title="Question {{ forloop.counter }}">
+                            {{ forloop.counter }}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="legend mt-3">
+                    <small class="d-block mb-1">
+                        <span class="question-number" style="width: 20px; height: 20px; background: rgba(255,255,255,0.1);"></span>
+                        Not Answered
+                    </small>
+                    <small class="d-block mb-1">
+                        <span class="question-number answered" style="width: 20px; height: 20px;"></span>
+                        Answered
+                    </small>
+                    <small class="d-block">
+                        <span class="question-number current" style="width: 20px; height: 20px;"></span>
+                        Current
+                    </small>
+                </div>
+                
+                <div class="exam-summary mt-4 p-3 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                    <h6>Exam Summary</h6>
+                    <small class="d-block">Duration: {{ attempt.exam.duration_minutes }} minutes</small>
+                    <small class="d-block">Total Questions: {{ total_questions }}</small>
+                    <small class="d-block">Total Marks: {{ attempt.exam.total_marks }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var currentQuestion = 1;
+var totalQuestions = {{ total_questions }};
+
+function navigateQuestion(questionNumber) {
+    // Hide current question
+    $('.question-card').hide();
+    
+    // Show target question
+    $('#question-' + questionNumber).show();
+    
+    // Update navigation
+    $('.question-number').removeClass('current');
+    $('#nav-' + questionNumber).addClass('current');
+    
+    currentQuestion = questionNumber;
+    
+    // Smooth scroll to top
+    $('html, body').animate({ scrollTop: 200 }, 300);
+}
+
+function updateQuestionStatus() {
+    $('.question-card').each(function(index) {
+        var questionNum = index + 1;
+        var hasAnswer = $(this).find('input[type="radio"]:checked').length > 0;
+        
+        if (hasAnswer) {
+            $('#nav-' + questionNum).addClass('answered');
+        } else {
+            $('#nav-' + questionNum).removeClass('answered');
+        }
+    });
+}
+
+// Initialize
+$(document).ready(function() {
+    $('#nav-1').addClass('current');
+    updateQuestionStatus();
+    updateProgress();
+    
+    // Update status when answer changes
+    $('.exam-form input[type="radio"]').change(function() {
+        updateQuestionStatus();
+        updateProgress();
+        autoSaveAnswers();
+    });
+});
+
+// Handle keyboard navigation
+$(document).keydown(function(e) {
+    if (e.ctrlKey) {
+        switch(e.which) {
+            case 37: // Left arrow
+                if (currentQuestion > 1) {
+                    navigateQuestion(currentQuestion - 1);
+                }
+                e.preventDefault();
+                break;
+            case 39: // Right arrow
+                if (currentQuestion < totalQuestions) {
+                    navigateQuestion(currentQuestion + 1);
+                }
+                e.preventDefault();
+                break;
+        }
+    }
+});
+
+// Warning for page leave
+window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = 'Are you sure you want to leave? Your exam progress will be lost.';
+    return e.returnValue;
+});
+</script>
+{% endblock %}

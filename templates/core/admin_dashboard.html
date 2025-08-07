@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Admin Dashboard - CBT System{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                </h2>
+                <div class="d-flex gap-2">
+                    <a href="/admin/" class="btn btn-success">
+                        <i class="fas fa-cog me-1"></i>Admin Panel
+                    </a>
+                    <a href="{% url 'exams:exam_list' %}" class="btn btn-primary">
+                        <i class="fas fa-list me-1"></i>Manage Exams
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ total_exams }}</h3>
+                            <p class="card-text small">Total Exams</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ active_exams }}</h3>
+                            <p class="card-text small">Active Exams</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ total_questions }}</h3>
+                            <p class="card-text small">Questions</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-question-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ total_students }}</h3>
+                            <p class="card-text small">Students</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-graduate fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ total_instructors }}</h3>
+                            <p class="card-text small">Instructors</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ pending_instructors }}</h3>
+                            <p class="card-text small">Pending</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Instructor Approvals -->
+    {% if pending_instructors > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Pending Instructor Approvals ({{ pending_instructors }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_instructor_registrations %}
+                        <div class="table-responsive">
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Institution</th>
+                                        <th>Department</th>
+                                        <th>Applied</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for instructor in recent_instructor_registrations %}
+                                    <tr>
+                                        <td>{{ instructor.get_full_name }}</td>
+                                        <td>{{ instructor.email }}</td>
+                                        <td>{{ instructor.institution }}</td>
+                                        <td>{{ instructor.department }}</td>
+                                        <td>{{ instructor.date_joined|timesince }} ago</td>
+                                        <td>
+                                            <a href="/admin/authentication/customuser/{{ instructor.id }}/change/" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-eye me-1"></i>Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="/admin/authentication/customuser/?user_type__exact=instructor&is_approved__exact=0" class="btn btn-danger">
+                                <i class="fas fa-users-cog me-1"></i>Manage All Pending Instructors
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Exam Attempts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_attempts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Exam</th>
+                                        <th>Score</th>
+                                        <th>Status</th>
+                                        <th>Started</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for attempt in recent_attempts %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-graduate me-2 text-muted"></i>
+                                                {{ attempt.student.get_full_name|default:attempt.student.username }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong>{{ attempt.exam.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ attempt.exam.subject.name }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ attempt.score|percentage:attempt.exam.total_marks|grade }}">
+                                                {{ attempt.score }}/{{ attempt.exam.total_marks }}
+                                                ({{ attempt.score|percentage:attempt.exam.total_marks }}%)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if attempt.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif attempt.status == 'in_progress' %}
+                                                <span class="badge bg-warning">In Progress</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ attempt.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>
+                                                {{ attempt.start_time|date:"M d, Y" }}<br>
+                                                {{ attempt.start_time|time:"H:i" }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            {% if attempt.end_time %}
+                                                {% with duration=attempt.end_time|timeuntil:attempt.start_time %}
+                                                    <small class="text-muted">{{ duration }}</small>
+                                                {% endwith %}
+                                            {% else %}
+                                                <small class="text-warning">Ongoing</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No exam attempts yet.</p>
+                            <a href="/admin/" class="btn btn-primary">
+                                Create Your First Exam
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="/admin/exams/question/add/" class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-plus-circle fa-2x mb-2"></i>
+                                <span>Add Questions</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="/admin/exams/exam/add/" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-file-plus fa-2x mb-2"></i>
+                                <span>Create Exam</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="/admin/exams/subject/" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-book fa-2x mb-2"></i>
+                                <span>Manage Subjects</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="/admin/authentication/customuser/" class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-users-cog fa-2x mb-2"></i>
+                                <span>Manage Users</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--bs-gray-700);
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}

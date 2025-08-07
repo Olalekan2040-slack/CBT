@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - CBT System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Join CBT System
+                    </h3>
+                    <p class="mb-0 mt-2">Choose your account type to get started</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 registration-option" onclick="location.href='{% url 'authentication:student_register' %}'">
+                                <div class="card-body text-center d-flex flex-column">
+                                    <i class="fas fa-user-graduate fa-4x text-primary mb-3"></i>
+                                    <h4 class="card-title text-primary">Student</h4>
+                                    <p class="card-text flex-grow-1">
+                                        Register as a student to take exams, view your results, and track your progress.
+                                    </p>
+                                    <ul class="list-unstyled text-start mb-3">
+                                        <li><i class="fas fa-check text-success me-2"></i>Take exams</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>View results instantly</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Email notifications</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Progress tracking</li>
+                                    </ul>
+                                    <a href="{% url 'authentication:student_register' %}" class="btn btn-primary mt-auto">
+                                        <i class="fas fa-arrow-right me-1"></i>Register as Student
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 registration-option" onclick="location.href='{% url 'authentication:instructor_register' %}'">
+                                <div class="card-body text-center d-flex flex-column">
+                                    <i class="fas fa-chalkboard-teacher fa-4x text-success mb-3"></i>
+                                    <h4 class="card-title text-success">Instructor</h4>
+                                    <p class="card-text flex-grow-1">
+                                        Register as an instructor to create exams, manage questions, and monitor student performance.
+                                    </p>
+                                    <ul class="list-unstyled text-start mb-3">
+                                        <li><i class="fas fa-check text-success me-2"></i>Create & manage exams</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Add questions (up to 1000+)</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Student analytics</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Grade management</li>
+                                    </ul>
+                                    <div class="alert alert-warning small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Requires approval from administrator
+                                    </div>
+                                    <a href="{% url 'authentication:instructor_register' %}" class="btn btn-success mt-auto">
+                                        <i class="fas fa-arrow-right me-1"></i>Register as Instructor
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="text-muted">Already have an account?</p>
+                        <a href="{% url 'authentication:login' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login Here
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .registration-option {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .registration-option:hover {
+        transform: translateY(-5px);
+        border-color: #007bff;
+        box-shadow: 0 10px 25px rgba(0,123,255,0.15);
+    }
+    
+    .card-body {
+        background: rgba(255,255,255,0.05);
+    }
+</style>
+{% endblock %}

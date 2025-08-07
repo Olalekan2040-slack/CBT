@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Student Dashboard - CBT System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card dashboard-card animate__animated animate__fadeInDown">
+                <div class="card-body text-center">
+                    <h1 class="display-6 mb-3">
+                        <i class="fas fa-user-graduate text-primary me-3"></i>
+                        Welcome back, {{ user.first_name }}!
+                    </h1>
+                    <p class="lead">Ready to take your next exam? Check out the available tests below.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="dashboard-card text-center">
+                <div class="icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3>{{ available_exams.count }}</h3>
+                <p class="mb-0">Available Exams</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="dashboard-card text-center">
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>{{ total_completed }}</h3>
+                <p class="mb-0">Completed Exams</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="dashboard-card text-center">
+                <div class="icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3>
+                    {% if completed_attempts %}
+                        {{ completed_attempts|last }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h3>
+                <p class="mb-0">Latest Score</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Available Exams -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list-alt me-2"></i>Available Exams
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if available_exams %}
+                        <div class="row">
+                            {% for exam in available_exams %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="exam-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ exam.title }}</h5>
+                                            <p class="card-text text-muted">{{ exam.description|truncatewords:15 }}</p>
+                                            
+                                            <div class="exam-details mb-3">
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-book me-1"></i>Subject: {{ exam.subject.name }}
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-clock me-1"></i>Duration: {{ exam.duration_minutes }} minutes
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-question-circle me-1"></i>Questions: {{ exam.questions.count }}
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-star me-1"></i>Total Marks: {{ exam.total_marks }}
+                                                </small>
+                                            </div>
+                                            
+                                            <button onclick="startExam({{ exam.id }})" 
+                                                    class="btn btn-success w-100">
+                                                <i class="fas fa-play me-2"></i>Start Exam
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3 text-muted">No Available Exams</h4>
+                            <p class="text-muted">
+                                There are no exams available at the moment. 
+                                Check back later or contact your instructor.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Results -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Recent Results
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if completed_attempts %}
+                        <div class="results-list">
+                            {% for attempt in completed_attempts|slice:":5" %}
+                                <div class="result-item mb-3 p-3 rounded" 
+                                     style="background: rgba(255,255,255,0.1);">
+                                    <h6 class="mb-2">{{ attempt.exam.title }}</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            {{ attempt.start_time|date:"M d, Y" }}
+                                        </small>
+                                        <span class="badge bg-{{ attempt.score|percentage:attempt.exam.total_marks|grade }}">
+                                            {{ attempt.score }}/{{ attempt.exam.total_marks }}
+                                        </span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 5px;">
+                                        <div class="progress-bar bg-{{ attempt.score|percentage:attempt.exam.total_marks|grade }}" 
+                                             style="width: {{ attempt.score|percentage:attempt.exam.total_marks }}%"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if completed_attempts.count > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'exams:exam_list' %}" class="btn btn-sm btn-outline-primary">
+                                    View All Results
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line text-muted" style="font-size: 3rem;"></i>
+                            <h6 class="mt-3 text-muted">No Results Yet</h6>
+                            <p class="text-muted small">
+                                Take your first exam to see results here.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'exams:exam_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>Browse All Exams
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="location.reload()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startExam(examId) {
+    if (confirm('Are you ready to start the exam? Once started, the timer will begin and you cannot pause.')) {
+        window.location.href = '/exams/start/' + examId + '/';
+    }
+}
+
+// Add some dynamic effects
+$(document).ready(function() {
+    // Animate stats counters
+    $('.dashboard-card h3').each(function() {
+        var $this = $(this);
+        var countTo = parseInt($this.text());
+        
+        if (!isNaN(countTo)) {
+            $({ countNum: 0 }).animate({
+                countNum: countTo
+            }, {
+                duration: 2000,
+                easing: 'swing',
+                step: function() {
+                    $this.text(Math.floor(this.countNum));
+                },
+                complete: function() {
+                    $this.text(this.countNum);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
