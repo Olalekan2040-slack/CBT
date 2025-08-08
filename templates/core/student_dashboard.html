@@ -46,13 +46,7 @@
                 <div class="icon">
                     <i class="fas fa-trophy"></i>
                 </div>
-                <h3>
-                    {% if completed_attempts %}
-                        {{ completed_attempts|last }}%
-                    {% else %}
-                        0%
-                    {% endif %}
-                </h3>
+                <h3>{{ latest_score_percentage }}%</h3>
                 <p class="mb-0">Latest Score</p>
             </div>
         </div>

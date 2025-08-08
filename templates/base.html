@@ -161,6 +161,24 @@
         .nav-link:hover {
             color: #ffffff !important;
         }
+        
+        /* Logout button styling */
+        .dropdown-item button {
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            font: inherit !important;
+            color: inherit !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            width: 100% !important;
+            text-align: left !important;
+        }
+        
+        .dropdown-item form {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
     </style>
     
     {% load static %}
@@ -200,9 +218,14 @@
                                 <i class="fas fa-user me-1"></i>{{ user.first_name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="{% url 'authentication:logout' %}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Logout
-                                </a></li>
+                                <li>
+                                    <form method="post" action="{% url 'authentication:logout' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
                     {% else %}

@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 from .models import CustomUser
 from .forms import StudentRegistrationForm, InstructorRegistrationForm, SimpleLoginForm
 
@@ -97,6 +99,8 @@ def register_view(request):
     return redirect('authentication:register_choice')
 
 @login_required
+@require_POST
+@csrf_protect
 def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')

@@ -23,10 +23,18 @@ def dashboard(request):
             status='completed'
         ).order_by('-start_time')
         
+        # Calculate latest score percentage safely
+        latest_score_percentage = 0
+        if completed_attempts.exists():
+            latest_attempt = completed_attempts.first()
+            if latest_attempt.exam.total_marks > 0:
+                latest_score_percentage = round((latest_attempt.score / latest_attempt.exam.total_marks) * 100, 1)
+        
         context.update({
             'available_exams': available_exams,
             'completed_attempts': completed_attempts,
             'total_completed': completed_attempts.count(),
+            'latest_score_percentage': latest_score_percentage,
         })
         
         return render(request, 'core/student_dashboard.html', context)
