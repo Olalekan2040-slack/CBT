@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}CBT System - Computer-Based Testing{% endblock %}
+{% block title %}N-TECH CBT - Advanced Training Assessment Platform{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -11,15 +11,15 @@
             <div class="col-lg-6">
                 <div class="animate__animated animate__fadeInLeft">
                     <h1 class="display-4 fw-bold mb-4">
-                        Welcome to <span class="text-warning">CBT System</span>
+                        Welcome to <span style="color: var(--ntech-purple);">N-TECH</span> <span class="text-warning">CBT</span>
                     </h1>
                     <p class="lead mb-4">
-                        Experience the future of testing with our advanced Computer-Based Testing platform. 
-                        Take exams securely, get instant results, and track your progress.
+                        Experience cutting-edge technology training assessment with our advanced Computer-Based Testing platform. 
+                        Master Full Stack Development, Data Science, Cybersecurity, and more with our comprehensive courses.
                     </p>
                     <div class="d-flex gap-3 flex-wrap">
                         <a href="{% url 'authentication:register' %}" class="btn btn-warning btn-lg">
-                            <i class="fas fa-user-plus me-2"></i>Get Started
+                            <i class="fas fa-rocket me-2"></i>Start Learning
                         </a>
                         <a href="{% url 'authentication:login' %}" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-sign-in-alt me-2"></i>Login
@@ -43,10 +43,10 @@
         <div class="row text-center mb-5">
             <div class="col-12">
                 <h2 class="display-5 fw-bold mb-3 animate__animated animate__fadeInUp">
-                    Why Choose Our CBT System?
+                    Why Choose N-TECH CBT?
                 </h2>
                 <p class="lead text-muted animate__animated animate__fadeInUp">
-                    Advanced features designed for modern education and assessment
+                    Advanced assessment platform designed for modern technology training and education
                 </p>
             </div>
         </div>
@@ -101,7 +101,7 @@
                 <div class="card h-100 text-center animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
                     <div class="card-body">
                         <div class="icon mb-3">
-                            <i class="fas fa-shield-alt text-info" style="font-size: 3rem;"></i>
+                            <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--ntech-purple-light);"></i>
                         </div>
                         <h5 class="card-title">Secure Testing</h5>
                         <p class="card-text">
@@ -116,7 +116,7 @@
                 <div class="card h-100 text-center animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
                     <div class="card-body">
                         <div class="icon mb-3">
-                            <i class="fas fa-chart-bar text-danger" style="font-size: 3rem;"></i>
+                            <i class="fas fa-chart-bar" style="font-size: 3rem; color: var(--ntech-purple);"></i>
                         </div>
                         <h5 class="card-title">Detailed Analytics</h5>
                         <p class="card-text">
@@ -131,7 +131,7 @@
                 <div class="card h-100 text-center animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
                     <div class="card-body">
                         <div class="icon mb-3">
-                            <i class="fas fa-mobile-alt text-purple" style="font-size: 3rem;"></i>
+                            <i class="fas fa-mobile-alt" style="font-size: 3rem; color: var(--ntech-purple-dark);"></i>
                         </div>
                         <h5 class="card-title">Mobile Responsive</h5>
                         <p class="card-text">
@@ -148,45 +148,89 @@
 <!-- Statistics Section -->
 <section class="py-5 bg-dark">
     <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold mb-3">N-TECH Training Programs</h2>
+                <p class="lead text-muted">Professional technology courses with comprehensive assessment</p>
+            </div>
+        </div>
         <div class="row text-center">
             <div class="col-md-3 mb-4">
                 <div class="animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
-                    <h3 class="display-4 fw-bold text-primary">1000+</h3>
-                    <p class="text-muted">Questions Available</p>
+                    <h3 class="display-4 fw-bold" style="color: var(--ntech-purple);">9</h3>
+                    <p class="text-muted">Tech Courses</p>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-                    <h3 class="display-4 fw-bold text-success">99.9%</h3>
-                    <p class="text-muted">Uptime</p>
+                    <h3 class="display-4 fw-bold text-success">1000+</h3>
+                    <p class="text-muted">Practice Questions</p>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
                     <h3 class="display-4 fw-bold text-warning">24/7</h3>
-                    <p class="text-muted">Available</p>
+                    <p class="text-muted">Learning Access</p>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
-                    <h3 class="display-4 fw-bold text-info">Instant</h3>
+                    <h3 class="display-4 fw-bold" style="color: var(--ntech-purple-light);">Instant</h3>
                     <p class="text-muted">Results</p>
                 </div>
             </div>
+        </div>
+        
+        <!-- Course Grid -->
+        <div class="row mt-5">
+            {% for course in courses %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 course-card animate__animated animate__fadeInUp" style="animation-delay: 0.{{ forloop.counter }}s;">
+                    <div class="card-body text-center">
+                        <div class="course-icon mb-3">
+                            {% if 'Full Stack' in course.name %}
+                                <i class="fas fa-code" style="font-size: 2.5rem; color: var(--ntech-purple);"></i>
+                            {% elif 'React' in course.name %}
+                                <i class="fab fa-react" style="font-size: 2.5rem; color: var(--ntech-purple-light);"></i>
+                            {% elif 'Django' in course.name or 'Python' in course.name %}
+                                <i class="fab fa-python" style="font-size: 2.5rem; color: var(--ntech-purple-dark);"></i>
+                            {% elif 'Data' in course.name %}
+                                <i class="fas fa-chart-line" style="font-size: 2.5rem; color: var(--ntech-purple);"></i>
+                            {% elif 'Cyber' in course.name %}
+                                <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--ntech-purple-light);"></i>
+                            {% elif 'UI/UX' in course.name %}
+                                <i class="fas fa-palette" style="font-size: 2.5rem; color: var(--ntech-purple-dark);"></i>
+                            {% elif 'Mobile' in course.name %}
+                                <i class="fas fa-mobile-alt" style="font-size: 2.5rem; color: var(--ntech-purple);"></i>
+                            {% else %}
+                                <i class="fas fa-laptop-code" style="font-size: 2.5rem; color: var(--ntech-purple);"></i>
+                            {% endif %}
+                        </div>
+                        <h5 class="card-title">{{ course.name }}</h5>
+                        <p class="card-text text-muted small">{{ course.code }}</p>
+                        <p class="card-text">{{ course.description|default:"Comprehensive training program" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Courses will be displayed here when available.</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 
 <!-- Call to Action -->
-<section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+<section class="py-5" style="background: linear-gradient(135deg, var(--ntech-purple) 0%, var(--ntech-purple-dark) 100%);">
     <div class="container text-center">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="animate__animated animate__fadeInUp">
-                    <h2 class="display-5 fw-bold mb-4">Ready to Get Started?</h2>
-                    <p class="lead mb-4">
-                        Join thousands of students and educators who trust our CBT system 
-                        for their testing needs.
+                    <h2 class="display-5 fw-bold mb-4 text-white">Ready to Master Technology?</h2>
+                    <p class="lead mb-4 text-white">
+                        Join N-TECH's comprehensive training programs and advance your career 
+                        in Full Stack Development, Data Science, Cybersecurity, and more.
                     </p>
                     <a href="{% url 'authentication:register' %}" class="btn btn-light btn-lg me-3">
                         <i class="fas fa-rocket me-2"></i>Start Your Journey

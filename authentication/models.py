@@ -24,6 +24,20 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     
+    def get_enrolled_courses(self):
+        """Get courses the user is enrolled in"""
+        from exams.models import Course
+        if hasattr(self, 'course_enrollments'):
+            return Course.objects.filter(enrollments__student=self, enrollments__is_active=True)
+        return Course.objects.none()
+    
+    def get_assigned_courses(self):
+        """Get courses assigned to instructor"""
+        if self.is_instructor:
+            from exams.models import Course
+            return Course.objects.filter(instructor=self)
+        return Course.objects.none()
+    
     @property
     def is_student(self):
         return self.user_type == 'student'
@@ -42,3 +56,25 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
+
+
+class CourseEnrollment(models.Model):
+    """Track student enrollments in N-TECH courses"""
+    student = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='course_enrollments',
+        limit_choices_to={'user_type': 'student'}
+    )
+    course = models.ForeignKey('exams.Course', on_delete=models.CASCADE, related_name='enrollments')
+    enrolled_date = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    completion_date = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        unique_together = ('student', 'course')
+        verbose_name = "Course Enrollment"
+        verbose_name_plural = "Course Enrollments"
+    
+    def __str__(self):
+        return f"{self.student.get_full_name()} - {self.course.name}"

@@ -3,11 +3,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate
 from .models import CustomUser
 
-from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate
-from .models import CustomUser
-
 class StudentRegistrationForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -47,13 +42,25 @@ class StudentRegistrationForm(UserCreationForm):
             'type': 'date'
         })
     )
+    course = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        help_text="Select the N-TECH course you want to enroll in"
+    )
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'date_of_birth', 'password1', 'password2')
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'date_of_birth', 'course', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Import here to avoid circular import
+        from exams.models import Course
+        self.fields['course'].queryset = Course.objects.filter(is_active=True)
+        
         self.fields['username'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Choose a username'
@@ -68,6 +75,8 @@ class StudentRegistrationForm(UserCreationForm):
         })
 
     def save(self, commit=True):
+        from .models import CourseEnrollment
+        
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
@@ -78,7 +87,14 @@ class StudentRegistrationForm(UserCreationForm):
         user.is_approved = True  # Students are auto-approved
         if commit:
             user.save()
+            # Enroll student in selected course
+            CourseEnrollment.objects.create(
+                student=user,
+                course=self.cleaned_data['course'],
+                is_active=True
+            )
         return user
+
 
 class InstructorRegistrationForm(UserCreationForm):
     email = forms.EmailField(
@@ -129,6 +145,24 @@ class InstructorRegistrationForm(UserCreationForm):
             'placeholder': 'Your department (e.g., Computer Science, Mathematics)'
         })
     )
+    specialization = forms.MultipleChoiceField(
+        choices=[
+            ('fullstack', 'Full Stack Web Development'),
+            ('frontend_react', 'Frontend Development with React.js'),
+            ('backend_django', 'Backend Development with Python Django'),
+            ('backend_fastapi', 'Backend Development with FastAPI'),
+            ('data_analysis', 'Data Analysis'),
+            ('data_science', 'Data Science'),
+            ('cybersecurity', 'Cybersecurity'),
+            ('ui_ux', 'UI/UX Design'),
+            ('mobile_dev', 'Mobile Development'),
+        ],
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-check-input'
+        }),
+        required=True,
+        help_text="Select the N-TECH courses you are qualified to teach"
+    )
     bio = forms.CharField(
         required=True,
         widget=forms.Textarea(attrs={
@@ -141,7 +175,7 @@ class InstructorRegistrationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'institution', 'department', 'bio', 'password1', 'password2')
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'institution', 'department', 'specialization', 'bio', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -166,7 +200,9 @@ class InstructorRegistrationForm(UserCreationForm):
         user.phone_number = self.cleaned_data.get('phone_number', '')
         user.institution = self.cleaned_data['institution']
         user.department = self.cleaned_data['department']
-        user.bio = self.cleaned_data['bio']
+        # Store specialization in bio for now (can be moved to separate field later)
+        specializations = ', '.join(dict(self.fields['specialization'].choices)[spec] for spec in self.cleaned_data['specialization'])
+        user.bio = f"Specializations: {specializations}\n\n{self.cleaned_data['bio']}"
         user.user_type = 'instructor'
         user.is_approved = False  # Instructors need approval from super admin
         if commit:

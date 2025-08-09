@@ -18,7 +18,18 @@ def exam_list(request):
         messages.error(request, 'Only students can access this page.')
         return redirect('core:dashboard')
     
-    available_exams = Exam.objects.filter(is_active=True).exclude(
+    # Get enrolled courses for the student
+    from authentication.models import CourseEnrollment
+    enrolled_courses = CourseEnrollment.objects.filter(
+        student=request.user, 
+        is_active=True
+    ).values_list('course', flat=True)
+    
+    # Only show exams for courses the student is enrolled in
+    available_exams = Exam.objects.filter(
+        is_active=True,
+        course__in=enrolled_courses
+    ).exclude(
         examattempt__student=request.user
     )
     
@@ -33,6 +44,18 @@ def start_exam(request, exam_id):
         return redirect('core:dashboard')
     
     exam = get_object_or_404(Exam, id=exam_id, is_active=True)
+    
+    # Check if student is enrolled in the exam's course
+    from authentication.models import CourseEnrollment
+    is_enrolled = CourseEnrollment.objects.filter(
+        student=request.user,
+        course=exam.course,
+        is_active=True
+    ).exists()
+    
+    if not is_enrolled:
+        messages.error(request, f'You are not enrolled in the {exam.course.name} course.')
+        return redirect('core:dashboard')
     
     # Check if student has already attempted this exam
     existing_attempt = ExamAttempt.objects.filter(

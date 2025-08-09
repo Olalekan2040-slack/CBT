@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Register - CBT System{% endblock %}
+{% block title %}Join N-TECH - Technology Training Registration{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -9,9 +9,9 @@
             <div class="card">
                 <div class="card-header bg-primary text-white text-center">
                     <h3 class="mb-0">
-                        <i class="fas fa-user-plus me-2"></i>Join CBT System
+                        <i class="fas fa-rocket me-2"></i>Join N-TECH Training
                     </h3>
-                    <p class="mb-0 mt-2">Choose your account type to get started</p>
+                    <p class="mb-0 mt-2">Choose your role to start your technology career journey</p>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -21,16 +21,16 @@
                                     <i class="fas fa-user-graduate fa-4x text-primary mb-3"></i>
                                     <h4 class="card-title text-primary">Student</h4>
                                     <p class="card-text flex-grow-1">
-                                        Register as a student to take exams, view your results, and track your progress.
+                                        Enroll in N-TECH courses and take assessments to master technology skills.
                                     </p>
                                     <ul class="list-unstyled text-start mb-3">
-                                        <li><i class="fas fa-check text-success me-2"></i>Take exams</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>View results instantly</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Email notifications</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Progress tracking</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Access 9 tech courses</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Take skill assessments</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Track learning progress</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Instant results & feedback</li>
                                     </ul>
                                     <a href="{% url 'authentication:student_register' %}" class="btn btn-primary mt-auto">
-                                        <i class="fas fa-arrow-right me-1"></i>Register as Student
+                                        <i class="fas fa-graduation-cap me-1"></i>Start Learning
                                     </a>
                                 </div>
                             </div>
@@ -39,23 +39,23 @@
                         <div class="col-md-6 mb-4">
                             <div class="card h-100 registration-option" onclick="location.href='{% url 'authentication:instructor_register' %}'">
                                 <div class="card-body text-center d-flex flex-column">
-                                    <i class="fas fa-chalkboard-teacher fa-4x text-success mb-3"></i>
-                                    <h4 class="card-title text-success">Instructor</h4>
+                                    <i class="fas fa-chalkboard-teacher fa-4x" style="color: var(--ntech-purple);"></i>
+                                    <h4 class="card-title" style="color: var(--ntech-purple);">Instructor</h4>
                                     <p class="card-text flex-grow-1">
-                                        Register as an instructor to create exams, manage questions, and monitor student performance.
+                                        Join our team of expert instructors to create and manage N-TECH course content.
                                     </p>
                                     <ul class="list-unstyled text-start mb-3">
-                                        <li><i class="fas fa-check text-success me-2"></i>Create & manage exams</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Add questions (up to 1000+)</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Student analytics</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Grade management</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Create course assessments</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Manage 1000+ questions</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Student performance analytics</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Course specialization</li>
                                     </ul>
                                     <div class="alert alert-warning small">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Requires approval from administrator
+                                        <i class="fas fa-shield-check me-1"></i>
+                                        Requires admin approval for quality assurance
                                     </div>
-                                    <a href="{% url 'authentication:instructor_register' %}" class="btn btn-success mt-auto">
-                                        <i class="fas fa-arrow-right me-1"></i>Register as Instructor
+                                    <a href="{% url 'authentication:instructor_register' %}" class="btn mt-auto" style="background-color: var(--ntech-purple); border-color: var(--ntech-purple); color: white;">
+                                        <i class="fas fa-chalkboard-teacher me-1"></i>Apply to Teach
                                     </a>
                                 </div>
                             </div>
@@ -65,7 +65,7 @@
                     <hr class="my-4">
                     
                     <div class="text-center">
-                        <p class="text-muted">Already have an account?</p>
+                        <p class="text-muted">Already part of N-TECH?</p>
                         <a href="{% url 'authentication:login' %}" class="btn btn-outline-primary">
                             <i class="fas fa-sign-in-alt me-1"></i>Login Here
                         </a>
@@ -85,12 +85,16 @@
     
     .registration-option:hover {
         transform: translateY(-5px);
-        border-color: #007bff;
-        box-shadow: 0 10px 25px rgba(0,123,255,0.15);
+        border-color: var(--ntech-purple);
+        box-shadow: 0 10px 25px rgba(111, 66, 193, 0.15);
     }
     
     .card-body {
         background: rgba(255,255,255,0.05);
+    }
+    
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, var(--ntech-purple) 0%, var(--ntech-purple-dark) 100%) !important;
     }
 </style>
 {% endblock %}

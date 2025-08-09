@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Register - CBT System{% endblock %}
+{% block title %}Join N-TECH - Register for Technology Training{% endblock %}
 
 {% block content %}
 <div class="container-fluid d-flex align-items-center justify-content-center min-vh-100">
@@ -10,9 +10,9 @@
             <div class="card shadow-lg animate__animated animate__fadeInUp">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
-                        <h2 class="card-title mt-3 mb-1">Create Account</h2>
-                        <p class="text-muted">Join our CBT platform today</p>
+                        <i class="fas fa-rocket text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="card-title mt-3 mb-1">Join N-TECH</h2>
+                        <p class="text-muted">Start your technology training journey today</p>
                     </div>
                     
                     <form method="post" class="needs-validation" novalidate>
@@ -130,13 +130,13 @@
                         
                         <div class="d-grid mb-4">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-user-plus me-2"></i>Create Account
+                                <i class="fas fa-rocket me-2"></i>Start Learning Journey
                             </button>
                         </div>
                         
                         <div class="text-center">
                             <p class="mb-0">
-                                Already have an account? 
+                                Already part of N-TECH? 
                                 <a href="{% url 'authentication:login' %}" class="text-primary text-decoration-none fw-bold">
                                     Sign in here
                                 </a>
@@ -152,7 +152,7 @@
 <style>
     .min-vh-100 {
         min-height: 100vh;
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: linear-gradient(135deg, var(--ntech-purple) 0%, var(--ntech-purple-dark) 100%);
         position: relative;
         overflow: hidden;
     }
@@ -171,6 +171,12 @@
     @keyframes float {
         0%, 100% { transform: translateY(0px) rotate(0deg); }
         50% { transform: translateY(-30px) rotate(15deg); }
+    }
+    
+    .card {
+        backdrop-filter: blur(10px);
+        background: rgba(26, 26, 26, 0.95) !important;
+        border: 1px solid rgba(111, 66, 193, 0.3);
     }
 </style>
 {% endblock %}

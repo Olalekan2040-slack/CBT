@@ -3,13 +3,53 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
+class Course(models.Model):
+    """N-TECH training courses"""
+    COURSE_CHOICES = [
+        ('fullstack', 'Full Stack Web Development'),
+        ('frontend_react', 'Frontend Development with React.js'),
+        ('backend_django', 'Backend Development with Python Django'),
+        ('backend_fastapi', 'Backend Development with FastAPI'),
+        ('data_analysis', 'Data Analysis'),
+        ('data_science', 'Data Science'),
+        ('cybersecurity', 'Cybersecurity'),
+        ('ui_ux', 'UI/UX Design'),
+        ('mobile_dev', 'Mobile Development'),
+    ]
+    
+    code = models.CharField(max_length=20, choices=COURSE_CHOICES, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    duration_weeks = models.PositiveIntegerField(default=12, help_text="Course duration in weeks")
+    instructor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        limit_choices_to={'user_type': 'instructor'},
+        related_name='assigned_courses'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ['name']
+
 class Subject(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subjects', null=True, blank=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return self.name
+        course_name = self.course.name if self.course else "No Course"
+        return f"{course_name} - {self.name}"
+    
+    class Meta:
+        unique_together = ('course', 'name')
 
 class Question(models.Model):
     DIFFICULTY_CHOICES = [
@@ -18,6 +58,7 @@ class Question(models.Model):
         ('hard', 'Hard'),
     ]
     
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='questions', null=True, blank=True)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='questions')
     question_text = models.TextField()
     option_a = models.CharField(max_length=255)
@@ -37,11 +78,22 @@ class Question(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.subject.name} - {self.question_text[:50]}..."
+        course_name = self.course.name if self.course else "No Course"
+        return f"{course_name} - {self.subject.name} - {self.question_text[:50]}..."
+    
+    def save(self, *args, **kwargs):
+        # Auto-assign course from subject if not provided
+        if not self.course and self.subject:
+            self.course = self.subject.course
+        # Ensure subject belongs to the same course
+        if self.subject and self.course and self.subject.course != self.course:
+            raise ValueError("Subject must belong to the same course")
+        super().save(*args, **kwargs)
 
 class Exam(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     questions = models.ManyToManyField(Question, through='ExamQuestion')
     duration_minutes = models.PositiveIntegerField(help_text="Duration in minutes")
@@ -59,7 +111,17 @@ class Exam(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return self.title
+        course_name = self.course.name if self.course else "No Course"
+        return f"{course_name} - {self.title}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-assign course from subject if not provided
+        if not self.course and self.subject:
+            self.course = self.subject.course
+        # Ensure subject belongs to the same course
+        if self.subject and self.course and self.subject.course != self.course:
+            raise ValueError("Subject must belong to the same course")
+        super().save(*args, **kwargs)
 
 class ExamQuestion(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)

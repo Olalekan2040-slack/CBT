@@ -2,7 +2,7 @@
 {% load static %}
 {% load math_filters %}
 
-{% block title %}Admin Dashboard - CBT System{% endblock %}
+{% block title %}Admin Dashboard - N-TECH CBT System{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -10,7 +10,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-primary">
-                    <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                    <i class="fas fa-tachometer-alt me-2"></i>N-TECH CBT Admin Dashboard
                 </h2>
                 <div class="d-flex gap-2">
                     <a href="/admin/" class="btn btn-success">
@@ -26,6 +26,22 @@
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
+        <div class="col-md-2 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ total_courses }}</h3>
+                            <p class="card-text small">Total Courses</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-book fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-2 mb-3">
             <div class="card bg-primary text-white h-100">
                 <div class="card-body">
@@ -49,6 +65,14 @@
                         <div>
                             <h3 class="card-title">{{ active_exams }}</h3>
                             <p class="card-text small">Active Exams</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
                         </div>
                         <div class="align-self-center">
                             <i class="fas fa-check-circle fa-2x"></i>
@@ -176,6 +200,53 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Course Enrollment Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>N-TECH Course Enrollment Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if course_stats %}
+                        <div class="row">
+                            {% for stat in course_stats %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-secondary">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="card-title text-truncate">{{ stat.course.name }}</h6>
+                                                <p class="card-text small text-muted">{{ stat.course.code }}</p>
+                                            </div>
+                                            <div class="text-end">
+                                                <h4 class="text-primary">{{ stat.enrollments }}</h4>
+                                                <small class="text-muted">enrolled</small>
+                                            </div>
+                                        </div>
+                                        {% if stat.course.instructor %}
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-chalkboard-teacher me-1"></i>
+                                                {{ stat.course.instructor.get_full_name|default:stat.course.instructor.username }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No course data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Recent Activity -->
     <div class="row">

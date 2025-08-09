@@ -18,13 +18,13 @@ def student_register(request):
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            messages.success(request, 'Student account created successfully! You can now login.')
+            messages.success(request, f'Welcome to N-TECH! Your student account has been created successfully. You can now login and start your technology training journey.')
             
             # Send welcome email
             try:
                 send_mail(
-                    'Welcome to CBT System - Student Account',
-                    f'Hello {user.first_name},\n\nWelcome to our Computer-Based Testing System! Your student account has been created successfully.\n\nYou can now log in and start taking exams.\n\nBest regards,\nCBT System Team',
+                    'Welcome to N-TECH CBT - Student Account Created',
+                    f'Hello {user.first_name},\n\nWelcome to N-TECH Computer-Based Testing System! Your student account has been created successfully.\n\nYou are now enrolled in our technology training programs and can start taking assessments to track your progress.\n\nLogin to access your courses and exams.\n\nBest regards,\nN-TECH Training Team',
                     settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     fail_silently=True,
@@ -44,14 +44,15 @@ def instructor_register(request):
         if form.is_valid():
             user = form.save()
             messages.info(request, 
-                'Instructor account created successfully! Your account is pending approval. '
-                'You will receive an email once approved by the administrator.')
+                f'Welcome to N-TECH! Your instructor account has been created successfully. '
+                f'Your application is pending approval by our administrators. '
+                f'You will receive an email notification once approved to start creating courses and assessments.')
             
             # Send approval pending email to instructor
             try:
                 send_mail(
-                    'CBT System - Instructor Account Pending Approval',
-                    f'Hello {user.first_name},\n\nThank you for registering as an instructor on our CBT System.\n\nYour account details:\n- Name: {user.get_full_name()}\n- Institution: {user.institution}\n- Department: {user.department}\n\nYour account is currently pending approval by the system administrator. You will receive an email notification once your account is approved.\n\nBest regards,\nCBT System Team',
+                    'N-TECH CBT - Instructor Account Pending Approval',
+                    f'Hello {user.first_name},\n\nThank you for applying to become an N-TECH instructor!\n\nYour account details:\n- Name: {user.get_full_name()}\n- Institution: {user.institution}\n- Department: {user.department}\n- Specializations: {", ".join(user.specializations) if user.specializations else "Not specified"}\n\nYour instructor application is currently under review by our administrators. You will receive an email notification once your account is approved and you can start creating technology training content.\n\nBest regards,\nN-TECH Training Team',
                     settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     fail_silently=True,
