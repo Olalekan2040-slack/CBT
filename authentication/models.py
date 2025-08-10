@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+import uuid
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = [
@@ -13,6 +14,8 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(max_length=30)
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='student')
     is_approved = models.BooleanField(default=False, help_text="Approved by super admin")
+    is_email_verified = models.BooleanField(default=False, help_text="Email verification status")
+    email_verification_token = models.UUIDField(default=uuid.uuid4, help_text="Token for email verification")
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     institution = models.CharField(max_length=200, blank=True, help_text="School/University/Institution")

@@ -50,10 +50,22 @@
                             </div>
                         {% endif %}
                         
-                        <div class="d-grid mb-4">
+                        <div class="d-grid mb-3">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-sign-in-alt me-2"></i>Sign In
                             </button>
+                        </div>
+                        
+                        <div class="text-center mb-3">
+                            <a href="{% url 'authentication:password_reset' %}" class="text-muted text-decoration-none">
+                                <i class="fas fa-key me-1"></i>Forgot your password?
+                            </a>
+                        </div>
+                        
+                        <div class="text-center mb-3">
+                            <a href="{% url 'authentication:resend_verification' %}" class="text-muted text-decoration-none">
+                                <i class="fas fa-envelope me-1"></i>Resend verification email
+                            </a>
                         </div>
                         
                         <div class="text-center">

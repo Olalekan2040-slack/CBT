@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
 from .models import CustomUser
 
 class StudentRegistrationForm(UserCreationForm):
@@ -244,3 +245,108 @@ class SimpleLoginForm(forms.Form):
             self.user = user
         
         return cleaned_data
+
+class CustomPasswordResetForm(PasswordResetForm):
+    """Custom password reset form with N-TECH styling"""
+    email = forms.EmailField(
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email address',
+            'autofocus': True
+        }),
+        help_text="Enter the email address associated with your N-TECH account."
+    )
+
+    def clean_email(self):
+        """Validate that the email exists in our system"""
+        email = self.cleaned_data['email']
+        
+        # Check if user exists and is active
+        try:
+            user = CustomUser.objects.get(email=email, is_active=True)
+        except CustomUser.DoesNotExist:
+            raise ValidationError(
+                "No account found with this email address. Please check your email or contact support."
+            )
+        
+        # Check if instructor is approved
+        if user.user_type == 'instructor' and not user.is_approved:
+            raise ValidationError(
+                "Your instructor account is pending approval. Please contact the administrator for assistance."
+            )
+        
+        return email
+
+    def get_users(self, email):
+        """Return matching user(s) who should receive a reset.
+        
+        This allows us to more easily customize this later if needed.
+        """
+        active_users = CustomUser.objects.filter(
+            email__iexact=email,
+            is_active=True,
+        )
+        return (
+            u for u in active_users
+            if u.has_usable_password() and
+            self._validate_user_permissions(u)
+        )
+
+    def _validate_user_permissions(self, user):
+        """Validate user permissions for password reset"""
+        # Students are always allowed to reset
+        if user.user_type == 'student':
+            return True
+        
+        # Instructors must be approved
+        if user.user_type == 'instructor':
+            return user.is_approved
+        
+        # Admins and superusers are allowed
+        if user.user_type == 'admin' or user.is_superuser:
+            return True
+        
+        return False
+
+class CustomSetPasswordForm(SetPasswordForm):
+    """Custom set password form with N-TECH styling and validation"""
+    
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password'
+        }),
+        strip=False,
+        help_text="Your password must be at least 8 characters long and contain letters and numbers."
+    )
+    
+    new_password2 = forms.CharField(
+        label="Confirm new password",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password'
+        }),
+    )
+
+    def clean_new_password1(self):
+        """Add custom validation for password strength"""
+        password = self.cleaned_data.get('new_password1')
+        
+        if len(password) < 8:
+            raise ValidationError("Password must be at least 8 characters long.")
+        
+        if password.isdigit():
+            raise ValidationError("Password cannot be entirely numeric.")
+        
+        if not any(char.isalpha() for char in password):
+            raise ValidationError("Password must contain at least one letter.")
+        
+        if not any(char.isdigit() for char in password):
+            raise ValidationError("Password must contain at least one number.")
+        
+        return password
