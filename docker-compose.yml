@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: ntech_db
+    environment:
+      POSTGRES_DB: ntech_cbt
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ntech_network
+
+  # Redis for caching and Celery
+  redis:
+    image: redis:7-alpine
+    container_name: ntech_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ntech_network
+
+  # Django Web Application
+  web:
+    build: .
+    container_name: ntech_web
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 cbt_system.wsgi:application"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=0
+      - DATABASE_URL=postgresql://postgres:postgres123@db:5432/ntech_cbt
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+    depends_on:
+      - db
+      - redis
+    networks:
+      - ntech_network
+
+  # Celery Worker for background tasks
+  celery:
+    build: .
+    container_name: ntech_celery
+    command: celery -A cbt_system worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=0
+      - DATABASE_URL=postgresql://postgres:postgres123@db:5432/ntech_cbt
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production
+    depends_on:
+      - db
+      - redis
+    networks:
+      - ntech_network
+
+  # Nginx reverse proxy (optional for production)
+  nginx:
+    image: nginx:alpine
+    container_name: ntech_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - web
+    networks:
+      - ntech_network
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  ntech_network:
+    driver: bridge
