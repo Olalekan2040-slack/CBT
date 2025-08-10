@@ -17,22 +17,32 @@ def student_register(request):
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            messages.success(request, f'Welcome to N-TECH! Your student account has been created successfully. You can now login and start your technology training journey.')
-            
-            # Send welcome email
             try:
-                send_mail(
-                    'Welcome to N-TECH CBT - Student Account Created',
-                    f'Hello {user.first_name},\n\nWelcome to N-TECH Computer-Based Testing System! Your student account has been created successfully.\n\nYou are now enrolled in our technology training programs and can start taking assessments to track your progress.\n\nLogin to access your courses and exams.\n\nBest regards,\nN-TECH Training Team',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [user.email],
-                    fail_silently=True,
-                )
+                user = form.save()
+                messages.success(request, f'Welcome to N-TECH! Your student account has been created successfully. You can now login and start your technology training journey.')
+                
+                # Send welcome email
+                try:
+                    send_mail(
+                        'Welcome to N-TECH CBT - Student Account Created',
+                        f'Hello {user.first_name},\n\nWelcome to N-TECH Computer-Based Testing System! Your student account has been created successfully.\n\nYou are now enrolled in our technology training programs and can start taking assessments to track your progress.\n\nLogin to access your courses and exams.\n\nBest regards,\nN-TECH Training Team',
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    print(f"Email sending failed: {e}")
+                
+                return redirect('authentication:login')
             except Exception as e:
-                print(f"Email sending failed: {e}")
-            
-            return redirect('authentication:login')
+                messages.error(request, f'Registration failed: {str(e)}')
+                print(f"Registration error: {e}")
+        else:
+            # Add form errors to messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+            messages.error(request, 'Please correct the errors below and try again.')
     else:
         form = StudentRegistrationForm()
     
