@@ -15,7 +15,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from .models import CustomUser
-from .forms import StudentRegistrationForm, InstructorRegistrationForm, SimpleLoginForm, CustomPasswordResetForm, CustomSetPasswordForm
+from .forms import StudentRegistrationForm, InstructorRegistrationForm, SimpleLoginForm, CustomPasswordResetForm, CustomSetPasswordForm, UserProfileForm, CourseEnrollmentForm, QuickCourseChangeForm
 import uuid
 import logging
 
@@ -297,3 +297,97 @@ def resend_verification_email(request):
         return redirect('authentication:login')
     
     return render(request, 'authentication/resend_verification.html')
+
+
+@login_required
+def user_profile(request):
+    """View and edit user profile"""
+    return render(request, 'authentication/profile.html', {
+        'user': request.user,
+        'enrolled_courses': request.user.get_enrolled_courses(),
+    })
+
+
+@login_required
+def edit_profile(request):
+    """Edit user profile information"""
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('authentication:profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    return render(request, 'authentication/edit_profile.html', {
+        'form': form
+    })
+
+
+@login_required
+def manage_courses(request):
+    """Manage course enrollments"""
+    if not request.user.is_student:
+        messages.error(request, 'Only students can manage course enrollments.')
+        return redirect('authentication:profile')
+    
+    if request.method == 'POST':
+        form = CourseEnrollmentForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Course enrollments updated successfully!')
+            return redirect('authentication:profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CourseEnrollmentForm(request.user)
+    
+    return render(request, 'authentication/manage_courses.html', {
+        'form': form,
+        'current_enrollments': request.user.get_enrolled_courses(),
+    })
+
+
+@login_required
+def quick_course_change(request):
+    """Quick course change for students"""
+    if not request.user.is_student:
+        messages.error(request, 'Only students can change their course.')
+        return redirect('authentication:profile')
+    
+    if request.method == 'POST':
+        form = QuickCourseChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your primary course has been changed successfully!')
+            return redirect('authentication:profile')
+        else:
+            messages.error(request, 'Please select a valid course.')
+    else:
+        form = QuickCourseChangeForm(request.user)
+    
+    return render(request, 'authentication/quick_course_change.html', {
+        'form': form,
+        'current_course': request.user.get_enrolled_courses().first(),
+    })
+
+
+@login_required
+def course_history(request):
+    """View user's course enrollment history"""
+    if not request.user.is_student:
+        messages.error(request, 'Only students can view course history.')
+        return redirect('authentication:profile')
+    
+    from .models import CourseEnrollment
+    
+    enrollments = CourseEnrollment.objects.filter(
+        student=request.user
+    ).select_related('course').order_by('-enrolled_date')
+    
+    return render(request, 'authentication/course_history.html', {
+        'enrollments': enrollments,
+    })

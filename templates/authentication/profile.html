@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - N-TECH CBT{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.1);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-body {
+        padding: 2rem;
+    }
+
+    .info-section {
+        margin-bottom: 2rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        color: #6b7280;
+        background: #f9fafb;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .course-card {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+
+    .course-card.active {
+        border-color: #7c3aed;
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(168, 85, 247, 0.05));
+    }
+
+    .course-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .course-meta {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-profile {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #6d28d9, #9333ea);
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .stat-card {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #7c3aed;
+        display: block;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-profile {
+            text-align: center;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h1 class="mb-2">{{ user.get_full_name }}</h1>
+            <p class="mb-0">
+                <i class="fas fa-graduation-cap me-2"></i>
+                {{ user.get_user_type_display }}
+            </p>
+        </div>
+
+        <div class="profile-body">
+            <!-- Basic Information -->
+            <div class="info-section">
+                <h3 class="mb-3">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                    Basic Information
+                </h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">{{ user.phone_number|default:"Not provided" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value">{{ user.date_of_birth|default:"Not provided" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Institution</div>
+                        <div class="info-value">{{ user.institution|default:"Not provided" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Courses -->
+            {% if user.is_student %}
+            <div class="info-section">
+                <h3 class="mb-3">
+                    <i class="fas fa-book me-2 text-primary"></i>
+                    Current Enrollments
+                </h3>
+                
+                {% if enrolled_courses %}
+                    {% for course in enrolled_courses %}
+                    <div class="course-card active">
+                        <div class="course-name">{{ course.name }}</div>
+                        <div class="course-meta">
+                            <i class="fas fa-code me-1"></i>{{ course.code }} • 
+                            <i class="fas fa-clock me-1"></i>{{ course.duration }} weeks
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="course-card">
+                        <div class="course-name">No Active Enrollments</div>
+                        <div class="course-meta">
+                            <i class="fas fa-info-circle me-1"></i>
+                            You are not currently enrolled in any courses. 
+                            <a href="{% url 'authentication:quick_course_change' %}" class="text-primary">Enroll in a course</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">{{ enrolled_courses.count }}</span>
+                    <div class="stat-label">Active Courses</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ user.date_joined|date:"M Y" }}</span>
+                    <div class="stat-label">Member Since</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">
+                        {% if user.is_email_verified %}
+                            <i class="fas fa-check-circle text-success"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                        {% endif %}
+                    </span>
+                    <div class="stat-label">Email Status</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'authentication:edit_profile' %}" class="btn-profile btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Edit Profile
+                </a>
+                
+                {% if user.is_student %}
+                <a href="{% url 'authentication:quick_course_change' %}" class="btn-profile btn-secondary">
+                    <i class="fas fa-exchange-alt"></i>
+                    Change Course
+                </a>
+                
+                <a href="{% url 'authentication:manage_courses' %}" class="btn-profile btn-secondary">
+                    <i class="fas fa-cogs"></i>
+                    Manage Enrollments
+                </a>
+                
+                <a href="{% url 'authentication:course_history' %}" class="btn-profile btn-secondary">
+                    <i class="fas fa-history"></i>
+                    Course History
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'core:dashboard' %}" class="btn-profile btn-secondary">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

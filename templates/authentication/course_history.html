@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Course History - N-TECH CBT{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .history-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.1);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .timeline {
+        position: relative;
+        padding: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 2rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #7c3aed, #a855f7);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        padding-left: 3rem;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -3rem;
+        top: 0.5rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .marker-active {
+        background: #10b981;
+    }
+
+    .marker-completed {
+        background: #6b7280;
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-content:hover {
+        transform: translateX(0.25rem);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-content.active {
+        border-left-color: #10b981;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+    }
+
+    .timeline-content.completed {
+        border-left-color: #6b7280;
+    }
+
+    .course-header {
+        display: flex;
+        justify-content: between;
+        align-items: start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .course-info {
+        flex: 1;
+    }
+
+    .course-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+
+    .course-code {
+        color: #7c3aed;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .course-description {
+        color: #6b7280;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    .enrollment-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-completed {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .enrollment-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .detail-icon {
+        color: #7c3aed;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: #d1d5db;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 1rem;
+        color: #374151;
+    }
+
+    .cta-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .btn-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 0.5rem;
+    }
+
+    .btn-cta:hover {
+        background: linear-gradient(135deg, #6d28d9, #9333ea);
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #7c3aed;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .timeline::before {
+            left: 1rem;
+        }
+        
+        .timeline-item {
+            padding-left: 2rem;
+        }
+        
+        .timeline-marker {
+            left: -2rem;
+        }
+        
+        .course-header {
+            flex-direction: column;
+            align-items: start;
+        }
+        
+        .enrollment-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="mb-2">
+            <i class="fas fa-history me-2"></i>
+            Course Enrollment History
+        </h1>
+        <p class="mb-0">Track your learning journey and course enrollments</p>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="stats-summary">
+        <div class="stat-card">
+            <span class="stat-number">{{ enrollment_history.count }}</span>
+            <div class="stat-label">Total Enrollments</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ active_enrollments.count }}</span>
+            <div class="stat-label">Active Courses</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ completed_enrollments.count }}</span>
+            <div class="stat-label">Completed Courses</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ user.date_joined|date:"M Y" }}</span>
+            <div class="stat-label">Member Since</div>
+        </div>
+    </div>
+
+    <!-- Course History Timeline -->
+    <div class="history-card">
+        {% if enrollment_history %}
+        <div class="timeline">
+            {% for enrollment in enrollment_history %}
+            <div class="timeline-item">
+                <div class="timeline-marker {% if enrollment.is_active %}marker-active{% else %}marker-completed{% endif %}"></div>
+                <div class="timeline-content {% if enrollment.is_active %}active{% else %}completed{% endif %}">
+                    <div class="course-header">
+                        <div class="course-info">
+                            <div class="course-name">{{ enrollment.course.name }}</div>
+                            <div class="course-code">{{ enrollment.course.code }}</div>
+                            {% if enrollment.course.description %}
+                            <div class="course-description">{{ enrollment.course.description|truncatewords:25 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="enrollment-status {% if enrollment.is_active %}status-active{% else %}status-completed{% endif %}">
+                            {% if enrollment.is_active %}Active{% else %}Completed{% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="enrollment-details">
+                        <div class="detail-item">
+                            <i class="fas fa-calendar-plus detail-icon"></i>
+                            <span>Enrolled: {{ enrollment.enrollment_date|date:"M d, Y" }}</span>
+                        </div>
+                        
+                        {% if not enrollment.is_active and enrollment.unenrollment_date %}
+                        <div class="detail-item">
+                            <i class="fas fa-calendar-minus detail-icon"></i>
+                            <span>Completed: {{ enrollment.unenrollment_date|date:"M d, Y" }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="detail-item">
+                            <i class="fas fa-clock detail-icon"></i>
+                            <span>Duration: {{ enrollment.course.duration }} weeks</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <i class="fas fa-users detail-icon"></i>
+                            <span>{{ enrollment.course.enrolled_students.count }} students</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>No Course History</h3>
+            <p>You haven't enrolled in any courses yet. Start your learning journey by enrolling in your first course!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Call to Action -->
+    <div class="cta-section">
+        {% if enrollment_history %}
+        <h3 class="mb-3">Ready for More Learning?</h3>
+        <p class="mb-3 text-muted">Explore more courses and continue your educational journey</p>
+        {% else %}
+        <h3 class="mb-3">Start Your Learning Journey</h3>
+        <p class="mb-3 text-muted">Enroll in your first course and begin building your skills</p>
+        {% endif %}
+        
+        <div>
+            <a href="{% url 'authentication:quick_course_change' %}" class="btn-cta">
+                <i class="fas fa-plus-circle"></i>
+                Enroll in New Course
+            </a>
+            <a href="{% url 'authentication:manage_courses' %}" class="btn-cta btn-secondary">
+                <i class="fas fa-cogs"></i>
+                Manage Enrollments
+            </a>
+            <a href="{% url 'authentication:user_profile' %}" class="btn-cta btn-secondary">
+                <i class="fas fa-user"></i>
+                Back to Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

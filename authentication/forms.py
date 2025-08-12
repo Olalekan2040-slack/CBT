@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
-from .models import CustomUser
+from .models import CustomUser, CourseEnrollment
 
 class StudentRegistrationForm(UserCreationForm):
     email = forms.EmailField(
@@ -350,3 +350,182 @@ class CustomSetPasswordForm(SetPasswordForm):
             raise ValidationError("Password must contain at least one number.")
         
         return password
+
+
+class UserProfileForm(forms.ModelForm):
+    """Form for updating user profile information"""
+    
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'institution', 'department']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your first name'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your last name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your email address'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your phone number'
+            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'institution': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your institution/school'
+            }),
+            'department': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your department'
+            }),
+        }
+
+
+class CourseEnrollmentForm(forms.Form):
+    """Form for managing course enrollments"""
+    
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        
+        # Import here to avoid circular import
+        from exams.models import Course
+        
+        # Get all available courses
+        all_courses = Course.objects.filter(is_active=True)
+        
+        # Get user's current enrollments
+        current_enrollments = CourseEnrollment.objects.filter(
+            student=user, 
+            is_active=True
+        ).values_list('course_id', flat=True)
+        
+        # Create checkboxes for each course
+        for course in all_courses:
+            field_name = f'course_{course.id}'
+            self.fields[field_name] = forms.BooleanField(
+                label=course.name,
+                required=False,
+                initial=course.id in current_enrollments,
+                widget=forms.CheckboxInput(attrs={
+                    'class': 'form-check-input'
+                })
+            )
+            # Store course info for later use
+            self.fields[field_name].course = course
+    
+    def save(self):
+        """Update user's course enrollments"""
+        from exams.models import Course
+        
+        # Get current enrollments
+        current_enrollments = list(CourseEnrollment.objects.filter(
+            student=self.user, 
+            is_active=True
+        ))
+        
+        # Collect selected courses
+        selected_course_ids = []
+        for field_name, field in self.fields.items():
+            if field_name.startswith('course_') and self.cleaned_data.get(field_name):
+                course_id = int(field_name.split('_')[1])
+                selected_course_ids.append(course_id)
+        
+        # Get currently enrolled course IDs
+        currently_enrolled_ids = [enrollment.course.id for enrollment in current_enrollments]
+        
+        # Deactivate courses that are no longer selected
+        for enrollment in current_enrollments:
+            if enrollment.course.id not in selected_course_ids:
+                enrollment.is_active = False
+                enrollment.save()
+        
+        # Add new enrollments for newly selected courses
+        for course_id in selected_course_ids:
+            if course_id not in currently_enrolled_ids:
+                # Check if there's an inactive enrollment we can reactivate
+                existing_enrollment = CourseEnrollment.objects.filter(
+                    student=self.user,
+                    course_id=course_id
+                ).first()
+                
+                if existing_enrollment:
+                    existing_enrollment.is_active = True
+                    existing_enrollment.save()
+                else:
+                    # Create new enrollment
+                    course = Course.objects.get(id=course_id)
+                    CourseEnrollment.objects.create(
+                        student=self.user,
+                        course=course,
+                        is_active=True
+                    )
+
+
+class QuickCourseChangeForm(forms.Form):
+    """Simplified form for quickly changing primary course"""
+    
+    course = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        empty_label="Select a course",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        help_text="Select your primary course of study"
+    )
+    
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        
+        # Import here to avoid circular import
+        from exams.models import Course
+        
+        self.fields['course'].queryset = Course.objects.filter(is_active=True)
+        
+        # Set current course as initial value
+        current_enrollment = CourseEnrollment.objects.filter(
+            student=user, 
+            is_active=True
+        ).first()
+        
+        if current_enrollment:
+            self.fields['course'].initial = current_enrollment.course
+    
+    def save(self):
+        """Change user's primary course enrollment"""
+        selected_course = self.cleaned_data['course']
+        
+        # Deactivate all current enrollments
+        CourseEnrollment.objects.filter(
+            student=self.user, 
+            is_active=True
+        ).update(is_active=False)
+        
+        # Check if user was previously enrolled in this course
+        existing_enrollment = CourseEnrollment.objects.filter(
+            student=self.user,
+            course=selected_course
+        ).first()
+        
+        if existing_enrollment:
+            # Reactivate existing enrollment
+            existing_enrollment.is_active = True
+            existing_enrollment.save()
+        else:
+            # Create new enrollment
+            CourseEnrollment.objects.create(
+                student=self.user,
+                course=selected_course,
+                is_active=True
+            )

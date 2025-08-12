@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quick Course Change - N-TECH CBT{% endblock %}
+
+{% block extra_css %}
+<style>
+    .course-change-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .change-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.1);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .change-header {
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .change-body {
+        padding: 2rem;
+    }
+
+    .current-course {
+        background: #f0f9ff;
+        border: 2px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .current-course-label {
+        font-size: 0.875rem;
+        color: #0369a1;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .current-course-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .current-course-code {
+        color: #0369a1;
+        font-weight: 600;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        display: block;
+        font-size: 1rem;
+    }
+
+    .course-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .course-select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .course-option {
+        padding: 0.5rem;
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .warning-box {
+        background: #fef3c7;
+        border: 2px solid #f59e0b;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .warning-title {
+        font-weight: 600;
+        color: #92400e;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .warning-text {
+        color: #92400e;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-change {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #6d28d9, #9333ea);
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-primary:disabled {
+        background: #d1d5db;
+        color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    .no-courses {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+    }
+
+    .no-courses i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d1d5db;
+    }
+
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="course-change-container">
+    <div class="change-card">
+        <div class="change-header">
+            <h1 class="mb-2">
+                <i class="fas fa-exchange-alt me-2"></i>
+                Quick Course Change
+            </h1>
+            <p class="mb-0">Switch to a different course quickly</p>
+        </div>
+
+        <div class="change-body">
+            {% if current_courses %}
+                <!-- Current Course Display -->
+                {% for course in current_courses %}
+                <div class="current-course">
+                    <div class="current-course-label">Currently Enrolled</div>
+                    <div class="current-course-name">{{ course.name }}</div>
+                    <div class="current-course-code">{{ course.code }}</div>
+                </div>
+                {% endfor %}
+
+                {% if current_courses.count > 1 %}
+                <div class="warning-box">
+                    <div class="warning-title">
+                        <i class="fas fa-info-circle"></i>
+                        Multiple Enrollments
+                    </div>
+                    <div class="warning-text">
+                        You are currently enrolled in multiple courses. This tool will add a new course to your enrollments.
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <!-- No Current Course -->
+                <div class="current-course" style="background: #fee2e2; border-color: #dc2626;">
+                    <div class="current-course-label" style="color: #dc2626;">No Active Enrollment</div>
+                    <div class="current-course-name" style="color: #1f2937;">Not enrolled in any course</div>
+                    <div class="current-course-code" style="color: #6b7280;">Select a course below to get started</div>
+                </div>
+            {% endif %}
+
+            <!-- Course Selection Form -->
+            {% if available_courses %}
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <label for="{{ form.new_course.id_for_label }}" class="form-label">
+                        {% if current_courses %}
+                            Add New Course
+                        {% else %}
+                            Select Your First Course
+                        {% endif %}
+                    </label>
+                    
+                    <select name="{{ form.new_course.name }}" id="{{ form.new_course.id_for_label }}" 
+                            class="course-select" required>
+                        <option value="">Choose a course...</option>
+                        {% for course in available_courses %}
+                        <option value="{{ course.id }}" class="course-option">
+                            {{ course.code }} - {{ course.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    
+                    {% if form.new_course.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.new_course.errors.0 }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="help-text">
+                        {% if current_courses %}
+                            This will add the selected course to your current enrollments. You can manage all your courses from the profile page.
+                        {% else %}
+                            Select your first course to begin your learning journey.
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if current_courses %}
+                <div class="warning-box">
+                    <div class="warning-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Note
+                    </div>
+                    <div class="warning-text">
+                        This will add a new course enrollment. To switch courses or manage multiple enrollments, 
+                        use the <a href="{% url 'authentication:manage_courses' %}" class="text-decoration-none fw-bold">Course Management</a> page.
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="btn-group">
+                    <button type="submit" class="btn-change btn-primary" id="submitBtn">
+                        <i class="fas fa-user-plus"></i>
+                        {% if current_courses %}Add Course{% else %}Enroll Now{% endif %}
+                    </button>
+                    <a href="{% url 'authentication:user_profile' %}" class="btn-change btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Profile
+                    </a>
+                </div>
+            </form>
+            {% else %}
+            <!-- No Available Courses -->
+            <div class="no-courses">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>No Available Courses</h3>
+                <p>All available courses have been enrolled or there are no courses available at this time.</p>
+                <a href="{% url 'authentication:manage_courses' %}" class="btn-change btn-secondary" style="width: auto; margin-top: 1rem;">
+                    <i class="fas fa-cogs"></i>
+                    Manage Current Enrollments
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Additional Options -->
+    <div class="text-center mt-4">
+        <p class="text-muted">Need more control over your enrollments?</p>
+        <a href="{% url 'authentication:manage_courses' %}" class="btn-change btn-secondary" style="width: auto;">
+            <i class="fas fa-cogs me-2"></i>
+            Advanced Course Management
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    const courseSelect = document.querySelector('.course-select');
+    
+    if (form && submitBtn) {
+        // Update button state based on selection
+        courseSelect.addEventListener('change', function() {
+            if (this.value) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn-primary:disabled');
+            } else {
+                submitBtn.disabled = true;
+            }
+        });
+        
+        // Initial state
+        submitBtn.disabled = !courseSelect.value;
+        
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            if (!courseSelect.value) {
+                e.preventDefault();
+                return false;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+            
+            // Fallback to re-enable after 5 seconds
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 5000);
+        });
+    }
+});
+</script>
+{% endblock %}

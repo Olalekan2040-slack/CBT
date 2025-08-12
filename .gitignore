@@ -12,7 +12,7 @@ media
 venv/
 env/
 ENV/
-
+env.example/
 # IDE
 .vscode/
 .idea/

@@ -11,6 +11,13 @@ urlpatterns = [
     path('register/student/', views.student_register, name='student_register'),
     path('register/instructor/', views.instructor_register, name='instructor_register'),
     
+    # Profile Management URLs
+    path('profile/', views.user_profile, name='profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('profile/courses/', views.manage_courses, name='manage_courses'),
+    path('profile/change-course/', views.quick_course_change, name='quick_course_change'),
+    path('profile/course-history/', views.course_history, name='course_history'),
+    
     # Email Verification URLs
     path('verify-email/<uid>/<token>/', views.verify_email, name='verify_email'),
     path('resend-verification/', views.resend_verification_email, name='resend_verification'),
